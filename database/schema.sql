@@ -10,6 +10,7 @@ CREATE TABLE employee (
     email       VARCHAR(150) NOT NULL UNIQUE,
     phone       VARCHAR(20)  NOT NULL,
     team_id     INT          NOT NULL,
+    password    VARCHAR(255) NOT NULL,
     PRIMARY KEY (employee_id),
     CONSTRAINT fk_employee_team FOREIGN KEY (team_id) REFERENCES team(team_id)
 );
@@ -18,16 +19,22 @@ CREATE TABLE admin (
     admin_id INT          NOT NULL AUTO_INCREMENT,
     name     VARCHAR(100) NOT NULL,
     email    VARCHAR(150) NOT NULL UNIQUE,
+    phone    VARCHAR(20),
     team_id  INT          NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
     PRIMARY KEY (admin_id),
     CONSTRAINT fk_admin_team FOREIGN KEY (team_id) REFERENCES team(team_id)
 );
+
+-- One admin per team enforced by UNIQUE on team_id.
+-- Multiple admins allowed across different teams.
 
 CREATE TABLE issue (
     issue_id         INT      NOT NULL AUTO_INCREMENT,
     employee_id      INT      NOT NULL,
     query            TEXT     NOT NULL,
     gemini_response  TEXT,
+    status           ENUM('open','in_progress','resolved','escalated') NOT NULL DEFAULT 'open',
     resolved         BOOLEAN  NOT NULL DEFAULT FALSE,
     created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     sms_sent         BOOLEAN  NOT NULL DEFAULT FALSE,

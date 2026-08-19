@@ -4,17 +4,28 @@ const VALID_STATUSES = ['pending', 'sent', 'failed'];
 
 const getAllNotifications = async (req, res) => {
     try {
-        const [rows] = await db.query(`
-            SELECT n.*,
-                   i.query AS issue_query,
-                   e.name  AS employee_name,
-                   a.name  AS admin_name
-            FROM notification n
-            JOIN issue    i ON n.issue_id    = i.issue_id
-            JOIN employee e ON n.employee_id = e.employee_id
-            JOIN admin    a ON n.admin_id    = a.admin_id
-            ORDER BY n.sent_at DESC
-        `);
+        let rows;
+        if (req.user.role === 'admin') {
+            // admin only sees notifications for their team
+            [rows] = await db.query(`
+                SELECT n.*, i.query AS issue_query, e.name AS employee_name, a.name AS admin_name
+                FROM notification n
+                JOIN issue    i ON n.issue_id    = i.issue_id
+                JOIN employee e ON n.employee_id = e.employee_id
+                JOIN admin    a ON n.admin_id    = a.admin_id
+                WHERE a.team_id = ?
+                ORDER BY n.sent_at DESC
+            `, [req.user.team_id]);
+        } else {
+            [rows] = await db.query(`
+                SELECT n.*, i.query AS issue_query, e.name AS employee_name, a.name AS admin_name
+                FROM notification n
+                JOIN issue    i ON n.issue_id    = i.issue_id
+                JOIN employee e ON n.employee_id = e.employee_id
+                JOIN admin    a ON n.admin_id    = a.admin_id
+                ORDER BY n.sent_at DESC
+            `);
+        }
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });

@@ -3,10 +3,26 @@ const db = require('../config/db');
 const getAllEmployees = async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT e.*, t.team_name 
+            SELECT e.employee_id, e.name, e.email, e.phone, e.team_id, t.team_name 
             FROM employee e 
             JOIN team t ON e.team_id = t.team_id
         `);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// returns employees for the authenticated admin's team (team_id from JWT)
+const getMyTeamEmployees = async (req, res) => {
+    const team_id = req.user.team_id;
+    try {
+        const [rows] = await db.query(`
+            SELECT e.employee_id, e.name, e.email, e.phone, e.team_id, t.team_name
+            FROM employee e
+            JOIN team t ON e.team_id = t.team_id
+            WHERE e.team_id = ?
+        `, [team_id]);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -59,4 +75,4 @@ const createEmployee = async (req, res) => {
     }
 };
 
-module.exports = { getAllEmployees, getEmployeeById, createEmployee };
+module.exports = { getAllEmployees, getMyTeamEmployees, getEmployeeById, createEmployee };

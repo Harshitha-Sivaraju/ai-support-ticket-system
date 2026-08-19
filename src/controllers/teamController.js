@@ -9,6 +9,19 @@ const getAllTeams = async (req, res) => {
     }
 };
 
+const getAvailableTeams = async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT t.* FROM team t
+            LEFT JOIN admin a ON t.team_id = a.team_id
+            WHERE a.team_id IS NULL
+        `);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 const createTeam = async (req, res) => {
     const { team_name } = req.body;
 
@@ -27,4 +40,4 @@ const createTeam = async (req, res) => {
     }
 };
 
-module.exports = { getAllTeams, createTeam };
+module.exports = { getAllTeams, getAvailableTeams, createTeam };
