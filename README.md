@@ -46,12 +46,16 @@ An AI-powered IT support system that helps employees troubleshoot technical issu
 ## Project Structure
 
 
-project/
+## Project Structure
+
+```text
+ai-support-ticket-system/
 │
 ├── frontend/
 │   ├── employee.html
 │   ├── admin.html
 │   ├── login.html
+│   ├── register.html
 │   ├── css/
 │   └── js/
 │
@@ -64,10 +68,9 @@ project/
 ├── database/
 │   └── schema.sql
 │
-├── .env
 ├── package.json
-<<<<<<< HEAD
+├── .gitignore
 └── README.md
-=======
+```
 └── README.md
 
