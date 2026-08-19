@@ -66,4 +66,8 @@ project/
 │
 ├── .env
 ├── package.json
+<<<<<<< HEAD
 └── README.md
+=======
+└── README.md
+>>>>>>> 5443dc7 (updated)
