@@ -54,4 +54,9 @@ CREATE TABLE notification (
     CONSTRAINT fk_notif_issue    FOREIGN KEY (issue_id)    REFERENCES issue(issue_id),
     CONSTRAINT fk_notif_employee FOREIGN KEY (employee_id) REFERENCES employee(employee_id),
     CONSTRAINT fk_notif_admin    FOREIGN KEY (admin_id)    REFERENCES admin(admin_id)
+    
 );
+
+SHOW TABLES;
+
+SELECT * FROM admin;
