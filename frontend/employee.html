@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Dashboard | IT Support</title>
+    <title>Customer Dashboard | Payment Support</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -673,7 +673,7 @@
                 <i class="bi bi-headset"></i>
             </div>
 
-            <span>IT Support System</span>
+            <span>Payment Support System</span>
 
         </div>
 
@@ -685,7 +685,7 @@
                 <i class="bi bi-person-fill"></i>
 
                 <span id="userName">
-                    Employee
+                    Customer
                 </span>
 
             </div>
@@ -720,7 +720,7 @@
 
 
         <!-- =====================================
-             LEFT: SUBMIT + ISSUE LIST
+             LEFT: TRANSACTIONS
              ===================================== -->
 
         <div class="left-panel">
@@ -729,80 +729,22 @@
             <div class="panel-header">
 
                 <div class="panel-title">
-                    Submit New Issue
+                    My Transactions
                 </div>
 
-
-                <div class="alert-box" id="alertBox">
-
-                    <i id="alertIcon"></i>
-
-                    <span id="alertMsg"></span>
-
-                </div>
-
-
-                <form class="submit-form" id="issueForm">
-
-
-                    <div>
-
-                        <label class="field-label">
-                            Describe your issue
-                        </label>
-
-
-                        <div class="input-wrap">
-
-                            <textarea
-                                id="queryInput"
-                                rows="3"
-                                required
-                            ></textarea>
-
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        type="submit"
-                        class="btn-primary btn-submit-issue"
-                        id="submitBtn"
-                    >
-
-                        <i class="bi bi-send-fill"></i>
-
-                        <span id="submitBtnText">
-                            Submit Issue
-                        </span>
-
-                    </button>
-
-
-                </form>
-
-            </div>
-
-
-            <div
-                class="panel-title"
-                style="padding: 14px 20px 0; font-size:0.72rem;"
-            >
-                My Issues
             </div>
 
 
             <div
                 class="issues-list"
-                id="issuesList"
+                id="transactionsList"
             >
 
                 <div class="empty-state">
 
-                    <i class="bi bi-inbox"></i>
+                    <i class="bi bi-credit-card"></i>
 
-                    Loading your issues...
+                    Loading your transactions...
 
                 </div>
 
@@ -814,13 +756,14 @@
 
 
         <!-- =====================================
-             RIGHT: ISSUE DETAIL
+             RIGHT: ISSUE DETAIL + EXISTING CHATBOT
              ===================================== -->
 
         <div class="right-panel">
 
 
             <!-- PLACEHOLDER -->
+
             <div
                 class="detail-placeholder"
                 id="detailPlaceholder"
@@ -829,7 +772,7 @@
                 <i class="bi bi-cursor-text"></i>
 
                 <p>
-                    Select an issue to view details
+                    Select a transaction to view details
                 </p>
 
             </div>
@@ -837,6 +780,7 @@
 
 
             <!-- ISSUE DETAIL -->
+
             <div
                 class="issue-detail"
                 id="issueDetail"
@@ -844,6 +788,7 @@
 
 
                 <!-- ISSUE HEADER -->
+
                 <div class="detail-header">
 
                     <div class="detail-meta">
@@ -872,6 +817,7 @@
 
 
                 <!-- QUERY -->
+
                 <div>
 
                     <div class="section-label">
@@ -888,11 +834,13 @@
 
 
 
-                <!-- CHAT SECTION -->
+                <!-- EXISTING CHATBOT -->
+
                 <div class="chat-section">
 
 
                     <!-- AI RESPONSE TITLE -->
+
                     <div class="ai-box-header">
 
                         <i class="bi bi-stars"></i>
@@ -903,12 +851,8 @@
 
 
 
-                    <!--
-                        FIXED CHAT RECTANGLE
+                    <!-- FIXED CHAT RECTANGLE -->
 
-                        ONLY THIS ELEMENT SCROLLS.
-                        EVERYTHING AROUND IT STAYS FIXED.
-                    -->
                     <div
                         class="ai-box"
                         id="chatMessages"
@@ -917,6 +861,7 @@
 
 
                     <!-- FOLLOW-UP INPUT -->
+
                     <div class="chat-input-row">
 
 
@@ -954,12 +899,8 @@
 
 
 
-                <!--
-                    BOTTOM ACTION BUTTONS
+                <!-- BOTTOM ACTION BUTTONS -->
 
-                    These stay OUTSIDE the scrolling
-                    chat area and remain visible.
-                -->
                 <div
                     id="detailActions"
                     style="
@@ -981,10 +922,12 @@
 
 
     <!-- EMPLOYEE JAVASCRIPT -->
+
     <script src="js/employee.js"></script>
 
 
     <!-- THEME SCRIPT -->
+
     <script>
 
         const toggleTheme = () => {

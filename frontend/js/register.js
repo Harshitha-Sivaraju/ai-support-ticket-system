@@ -45,9 +45,19 @@ const populateTeamDropdown = () => {
 
 const switchTab = (role) => {
     currentRole = role;
+
     document.getElementById('employeeTab').classList.toggle('active', role === 'employee');
     document.getElementById('adminTab').classList.toggle('active', role === 'admin');
-    document.getElementById('phoneField').style.display = role === 'employee' ? 'block' : 'none';
+    document.getElementById('customerTab').classList.toggle('active', role === 'customer');
+
+    document.getElementById('phoneField').style.display =
+        role === 'customer' ? 'block' : 'block';
+
+    document.getElementById('team_id').parentElement.parentElement.style.display =
+        role === 'customer' ? 'none' : 'block';
+
+    document.getElementById('team_id').required = role !== 'customer';
+
     populateTeamDropdown();
     hideAlert();
 };
@@ -76,10 +86,12 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         name: document.getElementById('name').value.trim(),
         email: document.getElementById('email').value.trim(),
         password: document.getElementById('password').value,
-        team_id: parseInt(document.getElementById('team_id').value),
+        ...(currentRole !== 'customer' && {
+        team_id: parseInt(document.getElementById('team_id').value)
+        }),
     };
 
-    if (currentRole === 'employee') {
+    if (currentRole === 'employee' || currentRole === 'customer') {
         body.phone = document.getElementById('phone').value.trim();
     }
 
@@ -104,7 +116,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         showAlert('Account created! Redirecting...', 'success');
 
         setTimeout(() => {
-            window.location.href = currentRole === 'employee' ? 'employee.html' : 'admin.html';
+            window.location.href = currentRole === 'admin' ? 'admin.html' : 'employee.html';
         }, 1000);
 
     } catch (err) {

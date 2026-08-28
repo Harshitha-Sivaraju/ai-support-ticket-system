@@ -12,3 +12,4 @@ router.patch('/:id/escalate',  protect, allowOnly('employee'),   issueController
 router.post('/:id/chat',       protect, allowOnly('employee'),   issueController.chatWithIssue);
 
 module.exports = router;
+

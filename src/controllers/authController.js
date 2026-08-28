@@ -158,4 +158,112 @@ const loginAdmin = async (req, res) => {
     }
 };
 
-module.exports = { registerEmployee, registerAdmin, loginEmployee, loginAdmin };
+// REGISTER CUSTOMER
+const registerCustomer = async (req, res) => {
+    const { name, email, phone, password } = req.body;
+
+    if (!name || !email || !password) {
+        return res.status(400).json({
+            error: 'Name, email and password are required'
+        });
+    }
+
+    try {
+        const [existing] = await db.query(
+            'SELECT email FROM customer WHERE email = ?',
+            [email]
+        );
+
+        if (existing.length > 0) {
+            return res.status(409).json({
+                error: 'Email already registered'
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const [result] = await db.query(
+            'INSERT INTO customer (name, email, phone, password) VALUES (?, ?, ?, ?)',
+            [name, email, phone || null, hashedPassword]
+        );
+
+        const token = generateToken(
+            result.insertId,
+            'customer',
+            null
+        );
+
+        res.status(201).json({
+            customer_id: result.insertId,
+            name,
+            email,
+            token
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
+// LOGIN CUSTOMER
+const loginCustomer = async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({
+            error: 'email and password are required'
+        });
+    }
+
+    try {
+        const [rows] = await db.query(
+            'SELECT * FROM customer WHERE email = ?',
+            [email]
+        );
+
+        if (rows.length === 0) {
+            return res.status(401).json({
+                error: 'Invalid email or password'
+            });
+        }
+
+        const customer = rows[0];
+
+        const isMatch = await bcrypt.compare(
+            password,
+            customer.password
+        );
+
+        if (!isMatch) {
+            return res.status(401).json({
+                error: 'Invalid email or password'
+            });
+        }
+
+        const token = generateToken(
+            customer.customer_id,
+            'customer',
+            null
+        );
+
+        res.json({
+            customer_id: customer.customer_id,
+            name: customer.name,
+            email: customer.email,
+            token
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+module.exports = {
+    registerEmployee,
+    registerAdmin,
+    loginEmployee,
+    loginAdmin,
+    registerCustomer,
+    loginCustomer
+};

@@ -26,6 +26,15 @@ CREATE TABLE admin (
     CONSTRAINT fk_admin_team FOREIGN KEY (team_id) REFERENCES team(team_id)
 );
 
+CREATE TABLE customer (
+    customer_id INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    phone VARCHAR(20),
+    password VARCHAR(255) NOT NULL,
+    PRIMARY KEY (customer_id)
+);
+
 -- One admin per team enforced by UNIQUE on team_id.
 -- Multiple admins allowed across different teams.
 

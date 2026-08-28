@@ -6,5 +6,7 @@ router.post('/register/employee', authController.registerEmployee);
 router.post('/register/admin', authController.registerAdmin);
 router.post('/login/employee', authController.loginEmployee);
 router.post('/login/admin', authController.loginAdmin);
+router.post('/register/customer', authController.registerCustomer);
+router.post('/login/customer', authController.loginCustomer);
 
 module.exports = router;

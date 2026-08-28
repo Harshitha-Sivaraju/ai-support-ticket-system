@@ -5,6 +5,8 @@ const switchTab = (role) => {
     currentRole = role;
     document.getElementById('employeeTab').classList.toggle('active', role === 'employee');
     document.getElementById('adminTab').classList.toggle('active', role === 'admin');
+    document.getElementById('customerTab').classList.toggle('active', role === 'customer');
+
     hideAlert();
 };
 
@@ -47,7 +49,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
         showAlert('Login successful! Redirecting...', 'success');
         setTimeout(() => {
-            window.location.href = currentRole === 'employee' ? 'employee.html' : 'admin.html';
+            window.location.href =
+            currentRole === 'admin' ? 'admin.html' : 'employee.html';
         }, 800);
 
     } catch {

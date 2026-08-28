@@ -8,6 +8,8 @@ const adminRoutes = require('./routes/adminRoutes');
 const issueRoutes = require('./routes/issueRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const authRoutes = require('./routes/authRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
+
 
 dotenv.config();
 
@@ -20,6 +22,7 @@ app.use('/api/employees', employeeRoutes);
 app.use('/api/admins', adminRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 // Health check route
 app.get('/', (req, res) => {
