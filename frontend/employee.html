@@ -173,6 +173,39 @@
             flex-shrink: 0;
         }
 
+        .left-panel-tabs {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .left-panel-tab {
+            border: none;
+            outline: none;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+
+            color: var(--text-faint);
+            cursor: pointer;
+
+            transition: color 0.25s ease;
+        }
+
+        .left-panel-tab:hover {
+            color: var(--text-main);
+        }
+
+        .left-panel-tab.active {
+            color: var(--text-muted);
+        }
+
         .panel-title {
             font-size: 0.78rem;
             font-weight: 700;
@@ -728,8 +761,24 @@
 
             <div class="panel-header">
 
-                <div class="panel-title">
-                    My Transactions
+                <div class="left-panel-tabs">
+
+                    <button
+                        class="left-panel-tab active"
+                        id="transactionsTab"
+                        onclick="switchLeftPanel('transactions')"
+                    >
+                        My Transactions
+                    </button>
+
+                    <button
+                        class="left-panel-tab"
+                        id="paymentHealthTab"
+                        onclick="switchLeftPanel('health')"
+                    >
+                        Payment Health
+                    </button>
+
                 </div>
 
             </div>
@@ -738,17 +787,7 @@
             <div
                 class="issues-list"
                 id="transactionsList"
-            >
-
-                <div class="empty-state">
-
-                    <i class="bi bi-credit-card"></i>
-
-                    Loading your transactions...
-
-                </div>
-
-            </div>
+            ></div>
 
 
         </div>
