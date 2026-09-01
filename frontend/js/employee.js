@@ -384,16 +384,26 @@ const showTransactionDetail = (id) => {
 
   const chatContainer = document.getElementById("chatMessages");
 
-  chatContainer.innerHTML = "";
-
   chatContainer.className = "ai-box chat-messages";
 
-  chatContainer.innerHTML = `
-        <div style="font-size:0.85rem;color:var(--text-faint)">
-            Ask the AI about this transaction.
-        </div>
-    `;
+    const savedHistory = chatHistories[id] || [];
 
+    if (savedHistory.length === 0) {
+        chatContainer.innerHTML = `
+            <div style="font-size:0.85rem;color:var(--text-faint)">
+                Ask the AI about this transaction.
+            </div>
+        `;
+    } else {
+        chatContainer.innerHTML = "";
+
+        savedHistory.forEach((msg) => {
+            addChatBubble(
+                msg.role,
+                msg.parts[0].text
+            );
+        }); 
+    }
   const chatInput = document.getElementById("chatInput");
 
   const chatSendBtn = document.getElementById("chatSendBtn");

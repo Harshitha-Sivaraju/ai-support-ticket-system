@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
+
 const transactionController = require('../controllers/transactionController');
 const { protect, allowOnly } = require('../middleware/authMiddleware');
 
@@ -16,6 +17,13 @@ router.get(
     protect,
     allowOnly('customer'),
     transactionController.getTransactionById
+);
+
+router.post(
+    '/:id/chat',
+    protect,
+    allowOnly('customer'),
+    transactionController.chatWithTransaction
 );
 
 module.exports = router;

@@ -91,11 +91,9 @@ const processPayment = async (req, res) => {
         // 4. Find transaction
         const transaction = transactions.find(
             t => t.transactionId === transactionId
-            
         );
-        
-        transaction.updatedAt = new Date().toISOString();
-        
+
+        // Check transaction exists BEFORE using it
         if (!transaction) {
             return res.status(404).json({
                 success: false,
@@ -103,6 +101,8 @@ const processPayment = async (req, res) => {
             });
         }
 
+        // Update time only after transaction is found
+        transaction.updatedAt = new Date().toISOString();
 
         // 5. Update transaction
         transaction.amount = amount;
@@ -135,10 +135,21 @@ const processPayment = async (req, res) => {
 
 
 // ===============================
+// Get Current Payment Health
+// Used by Transaction-Aware Gemini
+// ===============================
+const getPaymentHealth = () => ({
+    providerHealthy: paymentProviderHealthy,
+    bankHealthy: bankHealthy
+});
+
+
+// ===============================
 // Export Controllers
 // ===============================
 module.exports = {
     checkPaymentProviderHealth,
     checkBankHealth,
-    processPayment
+    processPayment,
+    getPaymentHealth
 };

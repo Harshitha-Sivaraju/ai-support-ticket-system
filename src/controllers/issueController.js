@@ -1,5 +1,5 @@
 const db = require('../config/db');
-const { getITSupportResponse, getChatResponse } = require('../services/geminiService');
+const { getPaymentSupportResponse, getChatResponse } = require('../services/geminiService');
 const { sendSMS } = require('../services/twilioService');
 
 // GET all issues — admin sees only their team's issues, employee sees only their own
@@ -76,7 +76,7 @@ const createIssue = async (req, res) => {
 
         let gemini_response = null;
         try {
-            gemini_response = await getITSupportResponse(query);
+            gemini_response = await getPaymentSupportResponse(query);
             await db.query(
                 'UPDATE issue SET gemini_response = ? WHERE issue_id = ?',
                 [gemini_response, issue_id]
@@ -223,21 +223,46 @@ const escalateIssue = async (req, res) => {
 // Employee sends a follow-up chat message for an existing issue
 const chatWithIssue = async (req, res) => {
     const { id } = req.params;
-    const { message, history } = req.body; // history: [{role, parts:[{text}]}]
+    const { message, history, transaction } = req.body;
     const employee_id = req.user.id;
 
-    if (!message) return res.status(400).json({ error: 'message is required' });
+    if (!message) {
+        return res.status(400).json({
+            error: 'message is required'
+        });
+    }
 
     try {
-        const [issue] = await db.query('SELECT * FROM issue WHERE issue_id = ?', [id]);
-        if (issue.length === 0) return res.status(404).json({ error: 'Issue not found' });
-        if (issue[0].employee_id !== employee_id) return res.status(403).json({ error: 'Access denied' });
+        const [issue] = await db.query(
+            'SELECT * FROM issue WHERE issue_id = ?',
+            [id]
+        );
 
-        const reply = await getChatResponse(issue[0].query, history || [], message);
+        if (issue.length === 0) {
+            return res.status(404).json({
+                error: 'Issue not found'
+            });
+        }
+
+        if (issue[0].employee_id !== employee_id) {
+            return res.status(403).json({
+                error: 'Access denied'
+            });
+        }
+
+        const reply = await getChatResponse(
+            issue[0].query,
+            history || [],
+            message,
+            transaction || null
+        );
+
         res.json({ reply });
+
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({
+            error: err.message
+        });
     }
 };
-
 module.exports = { getAllIssues, getIssueById, createIssue, resolveByEmployee, resolveIssue, escalateIssue, chatWithIssue };
