@@ -10,6 +10,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const authRoutes = require('./routes/authRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const supportTicketRoutes = require('./routes/supportTicketRoutes');
 
 
 dotenv.config();
@@ -25,6 +26,7 @@ app.use('/api/issues', issueRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/support-tickets', supportTicketRoutes);
 
 // Health check route
 app.get('/', (req, res) => {

@@ -719,15 +719,7 @@
             </div>
 
 
-            <div class="user-chip" style="font-size:0.75rem">
-
-                <i class="bi bi-people-fill"></i>
-
-                <span id="teamChip">
-                    Team
-                </span>
-
-            </div>
+           
 
 
             <button class="btn-logout" onclick="logout()">
@@ -774,6 +766,14 @@
                         Payment Health
                     </button>
 
+                    <button
+                        class="left-panel-tab"
+                        id="supportTicketsTab"
+                        onclick="switchLeftPanel('support')"
+                    >
+                        Support Requests
+                    </button>
+
                 </div>
 
             </div>
@@ -783,6 +783,14 @@
                 class="issues-list"
                 id="transactionsList"
             ></div>
+
+            <div
+                class="issues-list"
+                id="supportTicketsList"
+                style="display:none;"
+            ></div>
+
+            
 
 
         </div>

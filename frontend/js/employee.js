@@ -23,42 +23,42 @@ const authHeaders = () => ({
 });
 
 const showAlert = (msg, type = "error") => {
-    let box = document.getElementById("alertBox");
+  let box = document.getElementById("alertBox");
 
-    if (!box) {
-        box = document.createElement("div");
-        box.id = "alertBox";
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "alertBox";
 
-        box.style.position = "fixed";
-        box.style.top = "90px";
-        box.style.left = "50%";
-        box.style.transform = "translateX(-50%)";
-        box.style.zIndex = "9999";
-        box.style.padding = "14px 20px";
-        box.style.borderRadius = "10px";
-        box.style.maxWidth = "600px";
-        box.style.fontSize = "0.85rem";
-        box.style.fontWeight = "600";
-        box.style.background = "#241519";
-        box.style.border = "1px solid #5a343d";
-        box.style.color = "#f8df9a";
+    box.style.position = "fixed";
+    box.style.top = "90px";
+    box.style.left = "50%";
+    box.style.transform = "translateX(-50%)";
+    box.style.zIndex = "9999";
+    box.style.padding = "14px 20px";
+    box.style.borderRadius = "10px";
+    box.style.maxWidth = "600px";
+    box.style.fontSize = "0.85rem";
+    box.style.fontWeight = "600";
+    box.style.background = "#241519";
+    box.style.border = "1px solid #5a343d";
+    box.style.color = "#f8df9a";
 
-        document.body.appendChild(box);
-    }
+    document.body.appendChild(box);
+  }
 
-    box.textContent = msg;
+  box.textContent = msg;
 
-    if (type === "error") {
-        box.style.borderColor = "#8b3a46";
-    } else {
-        box.style.borderColor = "#5b8c68";
-    }
+  if (type === "error") {
+    box.style.borderColor = "#8b3a46";
+  } else {
+    box.style.borderColor = "#5b8c68";
+  }
 
-    if (type === "success") {
-        setTimeout(() => {
-            box.remove();
-        }, 3000);
-    }
+  if (type === "success") {
+    setTimeout(() => {
+      box.remove();
+    }, 3000);
+  }
 };
 
 const formatDate = (str) =>
@@ -149,62 +149,217 @@ const renderTransactions = () => {
 };
 
 const loadTransactions = async () => {
-    try {
-        const res = await fetch(`${API}/transactions`, {
-            headers: authHeaders(),
-        });
+  try {
+    const res = await fetch(`${API}/transactions`, {
+      headers: authHeaders(),
+    });
 
-        const data = await res.json();
+    const data = await res.json();
 
-        if (!res.ok) {
-            showAlert(data.error || "Failed to load transactions");
-            return;
-        }
-
-        transactions = data;
-
-        renderTransactions();
-
-        // Remember the transaction currently selected
-        const savedTransactionId =
-            sessionStorage.getItem("selectedTransactionId");
-
-        if (savedTransactionId) {
-            const exists = transactions.some(
-                (t) => t.transactionId === savedTransactionId
-            );
-
-            if (exists) {
-                showTransactionDetail(savedTransactionId);
-                return;
-            }
-        }
-
-        // Only use the first transaction if nothing was selected before
-        if (transactions.length > 0) {
-            showTransactionDetail(transactions[0].transactionId);
-        }
-
-    } catch {
-        showAlert("Cannot connect to server.");
+    if (!res.ok) {
+      showAlert(data.error || "Failed to load transactions");
+      return;
     }
+
+    transactions = data;
+
+    renderTransactions();
+
+    // Remember the transaction currently selected
+    const savedTransactionId = sessionStorage.getItem("selectedTransactionId");
+
+    if (savedTransactionId) {
+      const exists = transactions.some(
+        (t) => t.transactionId === savedTransactionId,
+      );
+
+      if (exists) {
+        showTransactionDetail(savedTransactionId);
+        return;
+      }
+    }
+
+    // Only use the first transaction if nothing was selected before
+    if (transactions.length > 0) {
+      showTransactionDetail(transactions[0].transactionId);
+    }
+  } catch {
+    showAlert("Cannot connect to server.");
+  }
 };
 
 const switchLeftPanel = async (panel) => {
+
     const transactionsTab = document.getElementById("transactionsTab");
     const paymentHealthTab = document.getElementById("paymentHealthTab");
+    const supportTicketsTab = document.getElementById("supportTicketsTab");
+
     const list = document.getElementById("transactionsList");
+    const supportList = document.getElementById("supportTicketsList");
+
+
+    // ==============================
+    // MY TRANSACTIONS
+    // ==============================
 
     if (panel === "transactions") {
+
         transactionsTab.classList.add("active");
         paymentHealthTab.classList.remove("active");
+        supportTicketsTab.classList.remove("active");
+
+        list.style.display = "block";
+        supportList.style.display = "none";
 
         renderTransactions();
+
         return;
     }
 
+
+    // ==============================
+    // SUPPORT REQUESTS
+    // ==============================
+
+    if (panel === "support") {
+
+        transactionsTab.classList.remove("active");
+        paymentHealthTab.classList.remove("active");
+        supportTicketsTab.classList.add("active");
+
+        list.style.display = "none";
+        supportList.style.display = "block";
+
+        supportList.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-arrow-repeat"></i>
+                Loading support requests...
+            </div>
+        `;
+
+        try {
+
+            const res = await fetch(
+                `${API}/support-tickets/my`,
+                {
+                    headers: authHeaders()
+                }
+            );
+
+            const tickets = await res.json();
+
+            if (!res.ok) {
+                throw new Error(
+                    tickets.error || "Failed to load support requests"
+                );
+            }
+
+
+            if (tickets.length === 0) {
+
+                supportList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-headset"></i>
+                        No support requests yet
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            supportList.innerHTML = tickets.map(ticket => {
+
+                let statusText = "Open";
+                let statusIcon = "bi-circle";
+
+                if (ticket.status === "in_progress") {
+                    statusText = "In Progress";
+                    statusIcon = "bi-hourglass-split";
+                }
+
+                if (ticket.status === "resolved") {
+                    statusText = "Resolved";
+                    statusIcon = "bi-check-circle";
+                }
+
+                if (ticket.status === "recovery") {
+                    statusText = "Recovery";
+                    statusIcon = "bi-arrow-repeat";
+                }
+
+
+                return `
+                    <div class="issue-item">
+
+                        <div class="issue-item-top">
+
+                            <span class="issue-id">
+                                Ticket #${ticket.ticket_id}
+                            </span>
+
+                            <span class="issue-date">
+                                ${new Date(ticket.created_at).toLocaleDateString()}
+                            </span>
+
+                        </div>
+
+
+                        <div style="
+                            font-size:0.72rem;
+                            color:var(--text-faint);
+                            margin-bottom:5px;
+                        ">
+                            Transaction ${ticket.transaction_id}
+                        </div>
+
+
+                        <div class="issue-query">
+                            ${ticket.customer_message}
+                        </div>
+
+
+                        <div style="
+                            margin-top:8px;
+                            font-size:0.75rem;
+                            color:var(--text-muted);
+                        ">
+                            <i class="bi ${statusIcon}"></i>
+                            ${statusText}
+                        </div>
+
+                    </div>
+                `;
+
+            }).join("");
+
+
+        } catch (err) {
+
+            console.error("Support requests error:", err);
+
+            supportList.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-exclamation-circle"></i>
+                    Unable to load support requests
+                </div>
+            `;
+        }
+
+        return;
+    }
+
+
+    // ==============================
+    // PAYMENT HEALTH
+    // ==============================
+
     transactionsTab.classList.remove("active");
     paymentHealthTab.classList.add("active");
+    supportTicketsTab.classList.remove("active");
+
+    list.style.display = "block";
+    supportList.style.display = "none";
 
     list.innerHTML = `
         <div class="empty-state">
@@ -214,13 +369,17 @@ const switchLeftPanel = async (panel) => {
     `;
 
     try {
+
         const [providerRes, bankRes] = await Promise.all([
+
             fetch(`${API}/payments/provider-health`, {
-                headers: authHeaders()
+                headers: authHeaders(),
             }),
+
             fetch(`${API}/payments/bank-health`, {
-                headers: authHeaders()
-            })
+                headers: authHeaders(),
+            }),
+
         ]);
 
         const provider = await providerRes.json();
@@ -240,56 +399,73 @@ const switchLeftPanel = async (panel) => {
                     Payment Services
                 </div>
 
+
                 <div style="
                     padding:14px;
                     border:1px solid var(--divider);
                     border-radius:12px;
                     margin-bottom:10px;
                 ">
+
                     <div style="
                         display:flex;
                         justify-content:space-between;
                         align-items:center;
                     ">
-                        <span style="color:var(--text-main);font-size:0.85rem">
+
+                        <span style="
+                            color:var(--text-main);
+                            font-size:0.85rem;
+                        ">
                             <i class="bi bi-credit-card"></i>
                             Payment Provider
                         </span>
 
                         <span style="
-                            color:${provider.healthy ? '#5fcf8b' : '#ff6b6b'};
+                            color:${provider.healthy ? "#5fcf8b" : "#ff6b6b"};
                             font-size:0.8rem;
                             font-weight:700;
                         ">
                             ● ${provider.healthy ? "Available" : "Unavailable"}
                         </span>
+
                     </div>
+
                 </div>
+
 
                 <div style="
                     padding:14px;
                     border:1px solid var(--divider);
                     border-radius:12px;
                 ">
+
                     <div style="
                         display:flex;
                         justify-content:space-between;
                         align-items:center;
                     ">
-                        <span style="color:var(--text-main);font-size:0.85rem">
+
+                        <span style="
+                            color:var(--text-main);
+                            font-size:0.85rem;
+                        ">
                             <i class="bi bi-bank"></i>
                             Bank Service
                         </span>
 
                         <span style="
-                            color:${bank.healthy ? '#5fcf8b' : '#ff6b6b'};
+                            color:${bank.healthy ? "#5fcf8b" : "#ff6b6b"};
                             font-size:0.8rem;
                             font-weight:700;
                         ">
                             ● ${bank.healthy ? "Available" : "Unavailable"}
                         </span>
+
                     </div>
+
                 </div>
+
 
                 <button
                     class="btn-primary"
@@ -304,6 +480,7 @@ const switchLeftPanel = async (panel) => {
         `;
 
     } catch {
+
         list.innerHTML = `
             <div class="empty-state">
                 <i class="bi bi-exclamation-circle"></i>
@@ -365,7 +542,7 @@ const showTransactionDetail = (id) => {
             Updated: ${formatDate(transaction.updatedAt)}
         </span>
     `;
-}
+  }
 
   document.getElementById("detailQuery").innerHTML = `
         <strong>Amount:</strong> ₹${transaction.amount.toLocaleString("en-IN")}<br>
@@ -386,24 +563,21 @@ const showTransactionDetail = (id) => {
 
   chatContainer.className = "ai-box chat-messages";
 
-    const savedHistory = chatHistories[id] || [];
+  const savedHistory = chatHistories[id] || [];
 
-    if (savedHistory.length === 0) {
-        chatContainer.innerHTML = `
+  if (savedHistory.length === 0) {
+    chatContainer.innerHTML = `
             <div style="font-size:0.85rem;color:var(--text-faint)">
                 Ask the AI about this transaction.
             </div>
         `;
-    } else {
-        chatContainer.innerHTML = "";
+  } else {
+    chatContainer.innerHTML = "";
 
-        savedHistory.forEach((msg) => {
-            addChatBubble(
-                msg.role,
-                msg.parts[0].text
-            );
-        }); 
-    }
+    savedHistory.forEach((msg) => {
+      addChatBubble(msg.role, msg.parts[0].text);
+    });
+  }
   const chatInput = document.getElementById("chatInput");
 
   const chatSendBtn = document.getElementById("chatSendBtn");
@@ -413,106 +587,124 @@ const showTransactionDetail = (id) => {
 
   const actionsEl = document.getElementById("detailActions");
 
-    if (transaction.status === "FAILED") {
-      actionsEl.innerHTML = `
-          <button
-            type="button"
-            class="btn-primary"
-            id="retryPaymentBtn"
-            onclick="event.preventDefault(); event.stopPropagation(); retryPayment('${transaction.transactionId}')"
-            style="width:100%;"
-          >
-              <i class="bi bi-arrow-repeat"></i>
-              Retry Payment
-          </button>
+  if (transaction.status === "FAILED") {
+    actionsEl.innerHTML = `
+        <div style="
+            display:flex;
+            gap:10px;
+            width:100%;
+        ">    
+            <button
+                type="button"
+                class="btn-primary"
+                id="retryPaymentBtn"
+                onclick="event.preventDefault(); event.stopPropagation(); retryPayment('${transaction.transactionId}')"
+                style="width:100%;"
+            >
+                <i class="bi bi-arrow-repeat"></i>
+                Retry Payment
+            </button>
 
-          <div style="
-              font-size:0.75rem;
-              color:var(--text-faint);
-              margin-top:8px;
-              text-align:center;
-          ">
-              We'll check payment provider and bank availability before retrying.
-          </div>
-      `;
+            <button
+                type="button"
+                class="btn-escalate"
+                onclick="openSupportTicket('${transaction.transactionId}')"
+                style="width:100%;justify-content:center;"
+            >
+                <i class="bi bi-headset"></i>
+                Contact Support
+            </button>
+        </div>
+
+            <div style="
+                font-size:0.75rem;
+                color:var(--text-faint);
+                margin-top:8px;
+                text-align:center;
+            ">
+                We'll check payment provider and bank availability before retrying.
+            </div>
+        `;
   } else {
-      actionsEl.innerHTML = `
-          <div style="font-size:0.8rem;color:var(--text-faint)">
-              Transaction selected. Ask the AI for help.
-          </div>
-      `;
+    actionsEl.innerHTML = `
+            <button
+                type="button"
+                class="btn-escalate"
+                onclick="openSupportTicket('${transaction.transactionId}')"
+                style="width:100%;justify-content:center;"
+            >
+                <i class="bi bi-headset"></i>
+                Contact Support
+            </button>
+        `;
   }
 };
 
 const retryPayment = async (transactionId) => {
-    const btn = document.getElementById("retryPaymentBtn");
+  const btn = document.getElementById("retryPaymentBtn");
 
-    if (!btn) return;
+  if (!btn) return;
 
-    btn.disabled = true;
-    btn.innerHTML = `
+  btn.disabled = true;
+  btn.innerHTML = `
         <i class="bi bi-arrow-repeat"></i>
         Processing payment...
     `;
 
-    try {
-        const transaction = transactions.find(
-            (t) => t.transactionId === transactionId
-        );
+  try {
+    const transaction = transactions.find(
+      (t) => t.transactionId === transactionId,
+    );
 
-        if (!transaction) {
-            showAlert("Transaction not found.");
-            return;
-        }
+    if (!transaction) {
+      showAlert("Transaction not found.");
+      return;
+    }
 
-        // Call backend
-        const res = await fetch(`${API}/payments/pay`, {
-            method: "POST",
-            headers: authHeaders(),
-            body: JSON.stringify({
-                transactionId: transaction.transactionId,
-                amount: transaction.amount
-            })
-        });
+    // Call backend
+    const res = await fetch(`${API}/payments/pay`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        transactionId: transaction.transactionId,
+        amount: transaction.amount,
+      }),
+    });
 
-        const data = await res.json();
+    const data = await res.json();
 
-        // Bank/provider unavailable
-        if (!res.ok) {
-            showAlert(
-                data.message ||
-                data.error ||
-                "Payment could not be processed."
-            );
+    // Bank/provider unavailable
+    if (!res.ok) {
+      showAlert(
+        data.message || data.error || "Payment could not be processed.",
+      );
 
-            return;
-        }
+      return;
+    }
 
-        // Simulate realistic payment processing
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        
-        // NOW update the timestamp
-        transaction.updatedAt = new Date().toISOString();
+    // Simulate realistic payment processing
+    await new Promise((resolve) => setTimeout(resolve, 5000));
 
-        // NOW the payment has successfully completed
-        transaction.status = "SUCCESS";
-        transaction.failureReason = null;
-        transaction.refundStatus = "NONE";
+    // NOW update the timestamp
+    transaction.updatedAt = new Date().toISOString();
 
-        // Update time ONLY after successful processing
-        transaction.updatedAt = new Date().toISOString();
+    // NOW the payment has successfully completed
+    transaction.status = "SUCCESS";
+    transaction.failureReason = null;
+    transaction.refundStatus = "NONE";
 
-        // Update left-side transaction list
-        renderTransactions();
+    // Update time ONLY after successful processing
+    transaction.updatedAt = new Date().toISOString();
 
-        // Update ONLY the existing detail fields
-        document.getElementById("detailBadge").outerHTML =
-            transactionStatusBadge(transaction).replace(
-                "span class=",
-                'span id="detailBadge" class='
-            );
+    // Update left-side transaction list
+    renderTransactions();
 
-        document.getElementById("detailQuery").innerHTML = `
+    // Update ONLY the existing detail fields
+    document.getElementById("detailBadge").outerHTML = transactionStatusBadge(
+      transaction,
+    ).replace("span class=", 'span id="detailBadge" class=');
+
+    document.getElementById("detailQuery").innerHTML = `
             <strong>Amount:</strong> ₹${transaction.amount.toLocaleString("en-IN")}<br>
             <strong>Payment Method:</strong> ${transaction.paymentMethod}
             ${transaction.upiApp ? `<br><strong>UPI App:</strong> ${transaction.upiApp}` : ""}
@@ -520,8 +712,8 @@ const retryPayment = async (transactionId) => {
             <br><strong>Refund Status:</strong> ${transaction.refundStatus || "NONE"}
         `;
 
-        // Update the date WITHOUT reloading the page
-        document.getElementById("detailDate").innerHTML = `
+    // Update the date WITHOUT reloading the page
+    document.getElementById("detailDate").innerHTML = `
             ${formatDate(transaction.timestamp)}
             <br>
             <span style="font-size:0.75rem;color:var(--text-faint)">
@@ -529,33 +721,30 @@ const retryPayment = async (transactionId) => {
             </span>
         `;
 
-        // Replace retry button area
-        const actionsEl = document.getElementById("detailActions");
+    // Replace retry button area
+    const actionsEl = document.getElementById("detailActions");
 
-        actionsEl.innerHTML = `
+    actionsEl.innerHTML = `
             <div style="font-size:0.8rem;color:var(--text-faint)">
                 Transaction selected. Ask the AI for help.
             </div>
         `;
 
-        // Success message AFTER processing finishes
-        showAlert(
-            "Payment successful! Your transaction has been updated.",
-            "success"
-        );
+    // Success message AFTER processing finishes
+    showAlert(
+      "Payment successful! Your transaction has been updated.",
+      "success",
+    );
+  } catch (err) {
+    console.error("Retry payment error:", err);
+    showAlert("Cannot connect to payment service.");
+  } finally {
+    const currentBtn = document.getElementById("retryPaymentBtn");
 
-    } catch (err) {
-        console.error("Retry payment error:", err);
-        showAlert("Cannot connect to payment service.");
-
-    } finally {
-        const currentBtn =
-            document.getElementById("retryPaymentBtn");
-
-        if (currentBtn) {
-            currentBtn.disabled = false;
-        }
+    if (currentBtn) {
+      currentBtn.disabled = false;
     }
+  }
 };
 
 const sendChat = async () => {
@@ -729,6 +918,48 @@ if (issueForm) {
     }
   });
 }
+
+const openSupportTicket = (transactionId) => {
+  const message = prompt(
+    `Contact Support\n\nTransaction: ${transactionId}\n\nDescribe your issue:`,
+  );
+
+  if (!message || !message.trim()) {
+    return;
+  }
+
+  createSupportTicket(transactionId, message.trim());
+};
+
+const createSupportTicket = async (transactionId, message) => {
+  try {
+    const res = await fetch(`${API}/support-tickets`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        transaction_id: transactionId,
+        customer_message: message,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to create support ticket");
+    }
+
+    alert(
+      `Support ticket created successfully!\n\n` +
+        `Ticket ID: #${data.ticket_id}\n\n` +
+        `Our support team has received your request and will review it.`
+    );
+  } catch (err) {
+    console.error("Support ticket error:", err);
+    alert(`Could not create support ticket: ${err.message}`);
+  }
+};
+
+window.openSupportTicket = openSupportTicket;
 
 window.logout = function () {
   localStorage.clear();

@@ -73,6 +73,105 @@ Provide the answer directly to the customer.
 
 
 // =========================================
+// AI Support Ticket Analysis
+// =========================================
+const analyzeSupportTicket = async (customerMessage, transaction) => {
+
+    const transactionContext = JSON.stringify(
+        transaction,
+        null,
+        2
+    );
+
+    const prompt = `
+You are an AI Payment Support Ticket Analyzer.
+
+A customer has contacted support about this transaction.
+
+Customer message:
+"${customerMessage}"
+
+Transaction information:
+${transactionContext}
+
+Analyze the issue and return ONLY valid JSON.
+
+The JSON must contain exactly these fields:
+
+{
+  "priority": "critical | high | medium | low",
+  "summary": "short summary of the customer's issue",
+  "recommendation": "practical action the support team should take"
+}
+
+Priority rules:
+
+- critical:
+  Large-value payment issue, repeated failure, money potentially at risk,
+  or an issue that requires urgent human intervention.
+
+- high:
+  Significant failed or stuck payment, customer is strongly affected,
+  or the issue likely needs human support soon.
+
+- medium:
+  Normal payment-support issue that needs attention but is not urgent.
+
+- low:
+  Minor question or issue with little immediate impact.
+
+Important rules:
+
+- Use the transaction data as the source of truth.
+- Do not invent transaction details.
+- Consider amount, status, failureReason, refundStatus and customer message.
+- If the transaction is FAILED, consider the failureReason when assigning priority.
+- If the transaction is PROCESSING, consider that the payment may need monitoring.
+- If the transaction is REVERSED, consider refundStatus.
+- Never claim money was deducted, refunded or recovered unless the transaction data supports it.
+- Keep summary and recommendation concise.
+- Return ONLY JSON.
+`;
+
+    try {
+
+        const result = await model.generateContent(prompt);
+
+        const text = result.response.text().trim();
+
+        // Remove markdown code fences if Gemini adds them
+        const cleaned = text
+            .replace(/^```json\s*/i, '')
+            .replace(/^```\s*/i, '')
+            .replace(/```$/i, '')
+            .trim();
+
+        const analysis = JSON.parse(cleaned);
+
+        return analysis;
+
+    } catch (err) {
+
+        if (err.status === 429) {
+            throw new Error(
+                'Gemini rate limit reached, please try again later'
+            );
+        }
+
+        if (err.status === 403) {
+            throw new Error(
+                'Gemini API key is invalid or unauthorized'
+            );
+        }
+
+        throw new Error(
+            `Gemini ticket analysis failed: ${err.message}`
+        );
+    }
+};
+
+
+// =========================================
 // Multi-Turn Payment-Support Chat
 // =========================================
 const getChatResponse = async (
@@ -212,5 +311,6 @@ Provide the answer directly to the customer.
 // =========================================
 module.exports = {
     getPaymentSupportResponse,
-    getChatResponse
+    getChatResponse,
+    analyzeSupportTicket
 };

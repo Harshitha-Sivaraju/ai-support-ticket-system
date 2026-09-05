@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | IT Support</title>
+    <title>Admin Dashboard | Payment Support</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="css/theme.css">
@@ -152,7 +152,15 @@
         /* CONTENT */
         .content-area {
             overflow-y: auto;
-            padding: 24px;
+            padding: 28px 32px;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .content-area > .page-section {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .page-section { display: none; }
@@ -168,9 +176,10 @@
         /* STATS ROW */
         .stats-row {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            width: 100%;
+            margin-bottom: 28px;
         }
 
         .stat-card {
@@ -307,6 +316,118 @@
             .nav-item { white-space: nowrap; }
             .stats-row { grid-template-columns: 1fr 1fr; }
         }
+        /* SUPPORT TICKET MODAL */
+        /* SUPPORT TICKET MODAL */
+#supportTicketModal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.85);
+    padding: 24px;
+}
+
+#supportTicketModal .modal-box {
+    position: relative;
+
+    width: 100%;
+    max-width: 650px;
+    max-height: 88vh;
+    overflow-y: auto;
+
+    background: #171717 !important;
+    opacity: 1 !important;
+
+    border: 1px solid #303030;
+    border-radius: 16px;
+    padding: 26px;
+
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7);
+}
+
+/* HEADER */
+#supportTicketModal .modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    padding-right: 42px;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+
+    border-bottom: 1px solid #303030;
+}
+
+#supportTicketModal .modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+#supportTicketModalId {
+    margin-top: 4px;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+}
+
+/* TOP-RIGHT X */
+#supportTicketModal .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #383838;
+    border-radius: 9px;
+
+    background: #222222;
+    color: #aaaaaa;
+
+    cursor: pointer;
+    font-size: 0.85rem;
+
+    transition: all 0.2s ease;
+}
+
+#supportTicketModal .modal-close:hover {
+    background: #2d2d2d;
+    border-color: #555555;
+    color: #ffffff;
+    transform: scale(1.04);
+}
+
+/* BOTTOM CLOSE BUTTON */
+#supportTicketModal .btn-escalate {
+    border: 1px solid #383838;
+    border-radius: 9px;
+
+    background: #222222;
+    color: #b8b8b8;
+
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+#supportTicketModal .btn-escalate:hover {
+    background: #2d2d2d;
+    border-color: #555555;
+    color: #ffffff;
+}
     </style>
 </head>
 <body>
@@ -319,16 +440,12 @@
     <div class="topbar">
         <div class="topbar-brand">
             <div class="brand-icon"><i class="bi bi-headset"></i></div>
-            <span>IT Support System</span>
+            <span>Payment Support System</span>
         </div>
         <div class="topbar-right">
             <div class="user-chip">
                 <i class="bi bi-shield-fill"></i>
                 <span id="userName">Admin</span>
-            </div>
-            <div class="user-chip" style="font-size:0.75rem">
-                <i class="bi bi-people-fill"></i>
-                <span id="teamChip">Team</span>
             </div>
             <button class="btn-logout" onclick="logout()">
                 <i class="bi bi-box-arrow-right"></i> Logout
@@ -339,113 +456,138 @@
     <!-- MAIN LAYOUT -->
     <div class="main-layout">
 
-        <!-- SIDEBAR -->
+    <!-- SIDEBAR -->
         <div class="sidebar">
+
             <button class="nav-item active" onclick="showSection('overview', this)">
                 <i class="bi bi-grid-fill"></i> Overview
             </button>
-            <button class="nav-item" onclick="showSection('issues', this)">
-                <i class="bi bi-ticket-fill"></i> All Issues
-                <span class="nav-badge" id="openCount">0</span>
-            </button>
-            <button class="nav-item" onclick="showSection('employees', this)">
-                <i class="bi bi-people-fill"></i> Employees
-            </button>
-            <button class="nav-item" onclick="showSection('notifications', this)">
-                <i class="bi bi-bell-fill"></i> Notifications
-            </button>
 
-            <div class="sidebar-divider"></div>
-            <div class="sidebar-section-label">Team Employees</div>
-            <div id="sidebarEmployeeList"><div class="sidebar-emp-empty">Loading...</div></div>
+            <button class="nav-item" onclick="showSection('supportTickets', this)">
+                <i class="bi bi-headset"></i> Support Tickets
+                <span class="nav-badge" id="supportTicketCount">0</span>
+            </button>
         </div>
 
         <!-- CONTENT -->
         <div class="content-area">
 
+    
             <!-- OVERVIEW -->
-            <div class="page-section active" id="section-overview">
-                <div class="section-heading">Overview</div>
-                <div class="stats-row">
-                    <div class="stat-card card">
-                        <div class="stat-label">Total Issues</div>
-                        <div class="stat-value" id="statTotal">0</div>
-                    </div>
-                    <div class="stat-card card">
-                        <div class="stat-label">Open</div>
-                        <div class="stat-value" id="statOpen">0</div>
-                    </div>
-                    <div class="stat-card card">
-                        <div class="stat-label">Resolved</div>
-                        <div class="stat-value" id="statResolved">0</div>
-                    </div>
-                    <div class="stat-card card">
-                        <div class="stat-label">Escalated</div>
-                        <div class="stat-value" id="statEscalated">0</div>
-                    </div>
+        <div class="page-section active" id="section-overview">
+
+            <div class="section-heading">Payment Support Overview</div>
+
+            <div class="stats-row">
+
+                <div class="stat-card card">
+                    <div class="stat-label">Total Support Tickets</div>
+                    <div class="stat-value" id="statTickets">0</div>
                 </div>
 
-                <div class="section-heading" style="font-size:0.85rem; margin-bottom:12px;">Recent Issues</div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Employee</th>
-                                <th>Query</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recentIssuesBody">
-                            <tr><td colspan="5" style="text-align:center; color:var(--text-faint); padding:30px">Loading...</td></tr>
-                        </tbody>
-                    </table>
+                <div class="stat-card card">
+                    <div class="stat-label">Open Tickets</div>
+                    <div class="stat-value" id="statOpenTickets">0</div>
                 </div>
+
+                <div class="stat-card card">
+                    <div class="stat-label">Recovery Cases</div>
+                    <div class="stat-value" id="statRecovery">0</div>
+                </div>
+
+                <div class="stat-card card">
+                    <div class="stat-label">Resolved Tickets</div>
+                    <div class="stat-value" id="statResolvedTickets">0</div>
+                </div>
+
             </div>
 
-            <!-- ALL ISSUES -->
-            <div class="page-section" id="section-issues">
-                <div class="section-heading">All Issues</div>
+            <div
+                class="section-heading"
+                style="font-size:0.85rem; margin-bottom:12px;"
+            >
+                Recent Support Tickets
+            </div>
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Customer</th>
+                            <th>Transaction</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="recentSupportTicketsBody">
+
+                        <tr>
+                            <td
+                                colspan="6"
+                                style="text-align:center;color:var(--text-faint);padding:30px"
+                            >
+                                Loading support tickets...
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+            <!-- SUPPORT TICKETS -->
+            <div class="page-section" id="section-supportTickets">
+
+                <div class="section-heading">Support Tickets</div>
+
                 <div class="table-wrap">
+
                     <table>
+
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Employee</th>
-                                <th>Team</th>
-                                <th>Query</th>
+                                <th>Customer</th>
+                                <th>Transaction</th>
+                                <th>Issue</th>
+                                <th>Priority</th>
                                 <th>Status</th>
                                 <th>Date</th>
                                 <th></th>
                             </tr>
                         </thead>
-                        <tbody id="allIssuesBody">
-                            <tr><td colspan="7" style="text-align:center; color:var(--text-faint); padding:30px">Loading...</td></tr>
+
+                        <tbody id="supportTicketsBody">
+
+                            <tr>
+                                <td
+                                    colspan="8"
+                                    style="
+                                        text-align:center;
+                                        color:var(--text-faint);
+                                        padding:30px
+                                    "
+                                >
+                                    Loading support tickets...
+                                </td>
+                            </tr>
+
                         </tbody>
+
                     </table>
+
                 </div>
+
             </div>
 
-            <!-- EMPLOYEES -->
-            <div class="page-section" id="section-employees">
-                <div class="section-heading">Team Employees</div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                            </tr>
-                        </thead>
-                        <tbody id="employeesBody">
-                            <tr><td colspan="4" style="text-align:center;color:var(--text-faint);padding:30px">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
 
             <!-- NOTIFICATIONS -->
             <div class="page-section" id="section-notifications">
@@ -472,5 +614,30 @@
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.getElementById('themeIcon').className = savedTheme === 'light' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
     </script>
+
+    <!-- SUPPORT TICKET DETAILS MODAL -->
+    <div class="modal-overlay" id="supportTicketModal" style="display:none;">
+        <div class="modal-box" style="max-width:650px;">
+
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title">Support Ticket</div>
+                    <div id="supportTicketModalId"
+                        style="font-size:0.75rem;color:var(--text-faint);margin-top:3px;">
+                    </div>
+                </div>
+
+                <button class="modal-close"
+                        onclick="closeSupportTicketModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div id="supportTicketDetails"></div>
+
+        </div>
+    </div>
+
+       
 </body>
 </html>

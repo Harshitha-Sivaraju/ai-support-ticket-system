@@ -1,73 +1,34 @@
 const API = 'http://localhost:3000/api';
-let currentRole = 'employee';
-let allTeams = [];
-let takenTeamIds = [];
 
-// load teams on page load
-const loadTeams = async () => {
-    try {
-        const res = await fetch(`${API}/teams`);
-        allTeams = await res.json();
-
-        const availRes = await fetch(`${API}/teams/available`);
-        const availTeams = await availRes.json();
-        takenTeamIds = allTeams
-            .filter(t => !availTeams.find(a => a.team_id === t.team_id))
-            .map(t => t.team_id);
-    } catch {
-        allTeams = [];
-    }
-    populateTeamDropdown();
-};
-
-const populateTeamDropdown = () => {
-    const select = document.getElementById('team_id');
-    select.innerHTML = '<option value="" disabled selected>Select a team</option>';
-
-    const teams = currentRole === 'admin'
-        ? allTeams.filter(t => !takenTeamIds.includes(t.team_id))
-        : allTeams;
-
-    if (teams.length === 0) {
-        select.innerHTML = currentRole === 'admin'
-            ? '<option value="" disabled selected>No available teams (all teams have admins)</option>'
-            : '<option value="" disabled selected>No teams found</option>';
-        return;
-    }
-
-    teams.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.team_id;
-        opt.textContent = `${t.team_name} (ID: ${t.team_id})`;
-        select.appendChild(opt);
-    });
-};
+let currentRole = 'customer';
 
 const switchTab = (role) => {
     currentRole = role;
 
-    document.getElementById('employeeTab').classList.toggle('active', role === 'employee');
     document.getElementById('adminTab').classList.toggle('active', role === 'admin');
     document.getElementById('customerTab').classList.toggle('active', role === 'customer');
 
-    document.getElementById('phoneField').style.display =
-        role === 'customer' ? 'block' : 'block';
+    const phoneField = document.getElementById('phoneField');
 
-    document.getElementById('team_id').parentElement.parentElement.style.display =
-        role === 'customer' ? 'none' : 'block';
+    if (phoneField) {
+        phoneField.style.display = 'block';
+    }
 
-    document.getElementById('team_id').required = role !== 'customer';
-
-    populateTeamDropdown();
     hideAlert();
 };
 
 const showAlert = (message, type = 'error') => {
     const box = document.getElementById('alertBox');
     const icon = document.getElementById('alertIcon');
+
     document.getElementById('alertMsg').textContent = message;
+
     box.className = `alert-box ${type}`;
-    icon.className = type === 'error' ? 'bi bi-exclamation-circle-fill' : 'bi bi-check-circle-fill';
+
+    icon.className =
+        type === 'error'
+            ? 'bi bi-exclamation-circle-fill'
+            : 'bi bi-check-circle-fill';
 };
 
 const hideAlert = () => {
@@ -75,10 +36,12 @@ const hideAlert = () => {
 };
 
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
+
     e.preventDefault();
 
     const btn = document.getElementById('registerBtn');
     const btnText = document.getElementById('btnText');
+
     btn.disabled = true;
     btnText.textContent = 'Creating Account...';
 
@@ -86,19 +49,16 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         name: document.getElementById('name').value.trim(),
         email: document.getElementById('email').value.trim(),
         password: document.getElementById('password').value,
-        ...(currentRole !== 'customer' && {
-        team_id: parseInt(document.getElementById('team_id').value)
-        }),
+        phone: document.getElementById('phone').value.trim()
     };
 
-    if (currentRole === 'employee' || currentRole === 'customer') {
-        body.phone = document.getElementById('phone').value.trim();
-    }
-
     try {
+
         const res = await fetch(`${API}/auth/register/${currentRole}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(body)
         });
 
@@ -116,15 +76,22 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         showAlert('Account created! Redirecting...', 'success');
 
         setTimeout(() => {
-            window.location.href = currentRole === 'admin' ? 'admin.html' : 'employee.html';
+            window.location.href =
+                currentRole === 'admin'
+                    ? 'admin.html'
+                    : 'employee.html';
         }, 1000);
 
     } catch (err) {
-        showAlert('Cannot connect to server. Make sure backend is running.');
+
+        showAlert(
+            'Cannot connect to server. Make sure backend is running.'
+        );
+
     } finally {
+
         btn.disabled = false;
         btnText.textContent = 'Create Account';
+
     }
 });
-
-loadTeams();

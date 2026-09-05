@@ -66,6 +66,31 @@ CREATE TABLE notification (
     
 );
 
+CREATE TABLE support_ticket (
+    ticket_id INT NOT NULL AUTO_INCREMENT,
+    customer_id INT NOT NULL,
+    transaction_id VARCHAR(100) NOT NULL,
+    customer_message TEXT NOT NULL,
+
+    ai_summary TEXT,
+    ai_priority ENUM('critical', 'high', 'medium', 'low')
+        NOT NULL DEFAULT 'medium',
+    ai_recommendation TEXT,
+
+    status ENUM('open', 'in_progress', 'resolved', 'recovery')
+        NOT NULL DEFAULT 'open',
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (ticket_id),
+
+    CONSTRAINT fk_ticket_customer
+        FOREIGN KEY (customer_id)
+        REFERENCES customer(customer_id)
+);
+
 SHOW TABLES;
 
 SELECT * FROM admin;
